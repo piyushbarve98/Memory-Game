@@ -4,12 +4,12 @@ import './App.css'
 import SingleCard from './components/singleCard'
 
 const cardImages = [
-  { "src": "/img/helmet-1.png" },
-  { "src": "/img/potion-1.png" },
-  { "src": "/img/ring-1.png" },
-  { "src": "/img/scroll-1.png" },
-  { "src": "/img/shield-1.png" },
-  { "src": "/img/sword-1.png" },
+  { "src": "/img/helmet-1.png" ,matched : false},
+  { "src": "/img/potion-1.png" ,matched : false},
+  { "src": "/img/ring-1.png" ,matched : false},
+  { "src": "/img/scroll-1.png" ,matched : false},
+  { "src": "/img/shield-1.png" ,matched : false},
+  { "src": "/img/sword-1.png" ,matched : false},
 ]
 
 function App() {
@@ -17,13 +17,15 @@ function App() {
   const [turns, setTurns] = useState(0)
   const [choiceOne, setChoiceOne] = useState(null)
   const [choiceTwo, setChoiceTwo] = useState(null)
-
+  const [disabled, setDisabled] = useState(false)
   // shuffle cards for new game
   const shuffleCards = () => {
     const shuffledCards = [...cardImages, ...cardImages]
       .sort(() => Math.random() - 0.5)
       .map(card => ({ ...card, id: Math.random() }))
-      
+    
+    setChoiceOne(null)
+    setChoiceTwo(null)
     setCards(shuffledCards)
     setTurns(0)
   }
@@ -32,16 +34,29 @@ function App() {
   },[])
 
   useEffect(()=>{
-    if(choiceOne && choiceTwo && choiceOne.src === choiceTwo.src){
-      console.log("correct")
+    if(choiceOne && choiceTwo ){
+      
+      if(choiceOne.src === choiceTwo.src){
+        setDisabled(true)
+      setCards(prevCards =>{
+        return prevCards.map((card)=>{
+          if(card.src === choiceOne.src){
+            return {...card, matched: true}
+          }
+          else return card
+        })
+      })
       resetTurns()
     }
     else{
-      console.log("Not Correct")
-      resetTurns()
+      setTimeout(()=>resetTurns(), 1000)
+      
     }
+  }
+    
   },[choiceOne,choiceTwo])
 
+  console.log(cards)
   const handleChoice = (card) =>{
     choiceOne ?  setChoiceTwo(card) : setChoiceOne(card)
   }
@@ -51,6 +66,7 @@ function App() {
     setChoiceOne(null)
     setChoiceTwo(null)
     setTurns(prevTurns=> prevTurns + 1)
+    setDisabled(false)
   }
   
   
@@ -65,10 +81,12 @@ function App() {
           key={card.id} 
           card={card}
           handleChoice={handleChoice}
+          flipped = {card===choiceOne || card=== choiceTwo || card.matched}
+          disabled = {disabled}
           />
         ))}
       </div>
-
+    <p>Turns - {turns}</p>
     </div>
   );
 }
